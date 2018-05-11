@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>three.js  canvas -geometry性状 -earth</title>
+</head>
+<body>
+    <div id="container"></div>
+    <canvas id="webglcanvas"></canvas>
+    <script src="./three.min.js"></script>
+    <script src="./stats.min.js"></script>
+    <script>
+//     场景 Sceen
+//     灯光Light
+//     相机Camera
+//     元素材质meshs
+//     按帧刷新 requestAnimationFrame
+//     渲染 render  canvas
+    const container = document.getElementById('container');
+    let canvas,stats,camera,scene,renderer,group;
+    let mouseX = 0,mouseY = 0;
+    let windowHalfX = window.innerWidth / 2;
+    let windowHalfY = window.innerHeight / 2;
+    // console.log(windoHalfX)
+    window.onload = function() {
+        init();
+        animate();
+        document.addEventListener('mousemove',onDocumentMouseMove,false);
+        window.addEventListener('resize',onWindowResize,false);
+    }
+    function onDocumentMouseMove(event){
+        // 基于左上角 鼠标相对于屏幕中心点的偏移量
+        mouseX = event.clientX-windowHalfX;
+        mouseY = event.clientY-windowHalfY;
+        
+    }
+    function onWindowResize(){
+        windowHalfX = window.innerWidth / 2;
+        windowhalfY = window.innerHeight / 2;
+        // console.log(windoHalfX,windohalfY);
+        camera.aspect = window.innerWidth/window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth,window.innerHeight);
+    }
+    function init(){
+        canvas = document.getElementById('webglcanvas');
+        // 相机拍摄的角度 相机拍摄的宽高比 相机最近的距离1px 相机最远的距离2000px
+        camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,1,2000);
+        camera.position.z = 500; //距离场景500px
+        //场景
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffffff);  //16进值
+        group = new THREE.Group;
+        scene.add(group);
+        // scene<-group<-mesh
+        const loader = new THREE.TextureLoader(); //文本材质加载器加载图片
+        loader.load('load_ocean_ice_clond_2048.jpg',function(texture){
+            // console.log(texture)
+            const geometry = new THREE.SphereGeometry(200,20,20);
+            
+            const material = new THREE.MeshBasicMaterial({
+                map: texture
+            });
+            const mesh = new THREE.Mesh(geometry,material);
+          
+            group.add(mesh);
+        });
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true //顺滑
+        });
+        renderer.setSize(window.innerWidth,window.innerHeight);
+        stats = new Stats();
+        container.appendChild(stats.dom);
+    }
+    function animate(){
+        requestAnimationFrame(animate);
+        render();
+        stats.update();
+    }
+    function render(){
+        // console.log(camera.position.x);
+        camera.position.x += (mouseX - camera.position.x) * 0.05;
+        camera.position.y += (-mouseY - camera.position.y) * 0.05;
+        camera.lookAt(scene.position);
+        group.rotation.y -= 0.005;
+        renderer.render(scene, camera);
+    }
+    </script>
+   
+</body>
+</html>
